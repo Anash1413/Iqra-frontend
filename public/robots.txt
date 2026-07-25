@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /login
 
-Sitemap: https://iqrafoundation.netlify.app/sitemap.xml
+Sitemap: https://iqra-amdara.netlify.app/sitemap.xml
