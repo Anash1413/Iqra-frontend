@@ -1,4 +1,8 @@
-const BASE_URL = 'http://localhost:5000/api';
+let base = import.meta.env.VITE_API_URL || 'https://iqra-backend-o4g7.onrender.com';
+if (base && !base.endsWith('/api') && !base.endsWith('/api/')) {
+  base = base.replace(/\/$/, '') + '/api';
+}
+const BASE_URL = base;
 
 const buildQueryString = (params) => {
   if (!params) return '';
