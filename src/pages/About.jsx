@@ -9,9 +9,10 @@ const About = () => {
   const history = 'The IQRA Foundation was founded by a team of dedicated scholars and educators with a vision to encourage high achievement. Recognizing a gap in traditional reward systems, the foundation established its annual reviews and awards ceremony to celebrate the highest achievers in standard school boards (CBSE, MP Board) alongside traditional religious tracks (Hifz memorization, Madrasa qualifications). We believe that both secular and spiritual intelligence are critical, and our annual support functions help keep students motivated, providing scholarships and recognitions.';
 
   const team = [
-    { name: 'Ahmad Anash', role: 'Founder & Chief Patron', photo: '' },
-    { name: 'Anash Khan', role: 'Director of Academic Reviews', photo: '' },
-    { name: 'Anash', role: 'Administrative Executive', photo: '' }
+    { name: 'Anash Khan', role: 'Co-founder & Chief Patron', photo: '' },
+    { name: 'Amaan Khan', role: 'Co-founder & Chief Patron', photo: '' },
+    { name: 'Amzad Khan', role: 'Director of Academic', photo: '' },
+    { name: 'Mohammad Moeen', role: 'Administrative Executive', photo: '' }
   ];
 
   return (

@@ -15,6 +15,17 @@ import Dashboard from './pages/admin/Dashboard';
 import StudentsManager from './pages/admin/StudentsManager';
 import AdminsManager from './pages/admin/AdminsManager';
 
+// Certificates Module subpages
+import CertificatesDashboard from './pages/admin/certificates/Dashboard';
+import SingleGenerate from './pages/admin/certificates/SingleGenerate';
+import BulkGenerate from './pages/admin/certificates/BulkGenerate';
+import TemplateEditor from './pages/admin/certificates/TemplateEditor';
+import CertificatesHistory from './pages/admin/certificates/History';
+import VerifyCertificate from './pages/VerifyCertificate';
+
+import StudentProfile from './pages/StudentProfile';
+import NominationFormsManager from './pages/admin/NominationFormsManager';
+
 // Public Layout wrapper to show Navbar and Footer
 const PublicLayout = () => {
   return (
@@ -39,6 +50,16 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/merit-list" element={<MeritList />} />
+            <Route path="/verify" element={<VerifyCertificate />} />
+            <Route path="/verify/:certificateNo" element={<VerifyCertificate />} />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <StudentProfile />
+                </ProtectedRoute>
+              } 
+            />
           </Route>
 
           {/* Admin Authentication Screen */}
@@ -55,6 +76,12 @@ function App() {
           >
             <Route index element={<Dashboard />} />
             <Route path="students" element={<StudentsManager />} />
+            <Route path="certificates" element={<CertificatesDashboard />} />
+            <Route path="certificates/single" element={<SingleGenerate />} />
+            <Route path="certificates/bulk" element={<BulkGenerate />} />
+            <Route path="certificates/templates" element={<TemplateEditor />} />
+            <Route path="certificates/history" element={<CertificatesHistory />} />
+            <Route path="nominations" element={<NominationFormsManager />} />
             <Route 
               path="admins" 
               element={

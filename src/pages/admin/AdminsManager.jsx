@@ -10,6 +10,7 @@ const AdminsManager = () => {
   
   const [admins, setAdmins] = useState([]);
   const [allowPublicReg, setAllowPublicReg] = useState(false);
+  const [allowStudentForm, setAllowStudentForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -33,6 +34,7 @@ const AdminsManager = () => {
 
       const status = await api.getRegistrationStatus();
       setAllowPublicReg(status.allowPublicRegistration);
+      setAllowStudentForm(status.allowStudentForm);
     } catch (err) {
       toast.error('Failed to load administrative settings.');
     } finally {
@@ -48,9 +50,21 @@ const AdminsManager = () => {
     const nextVal = !allowPublicReg;
     const toastId = toast.loading(nextVal ? 'Enabling public signups...' : 'Disabling public signups...');
     try {
-      await api.toggleRegistration(nextVal, token);
+      await api.toggleRegistration({ allowPublicRegistration: nextVal }, token);
       setAllowPublicReg(nextVal);
       toast.success(nextVal ? 'Public registration enabled successfully!' : 'Public registration disabled successfully!', { id: toastId });
+    } catch (err) {
+      toast.error(err.message || 'Failed to update toggle setting.', { id: toastId });
+    }
+  };
+
+  const handleToggleStudentForm = async () => {
+    const nextVal = !allowStudentForm;
+    const toastId = toast.loading(nextVal ? 'Enabling student form...' : 'Disabling student form...');
+    try {
+      await api.toggleRegistration({ allowStudentForm: nextVal }, token);
+      setAllowStudentForm(nextVal);
+      toast.success(nextVal ? 'Student form enabled successfully!' : 'Student form disabled successfully!', { id: toastId });
     } catch (err) {
       toast.error(err.message || 'Failed to update toggle setting.', { id: toastId });
     }
@@ -125,12 +139,12 @@ const AdminsManager = () => {
       {/* Toggle Public Registration Control Card */}
       <div className="bg-white p-6 rounded-2xl border border-slate-150 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition-shadow">
         <div className="space-y-1 max-w-lg">
-          <h3 className="font-serif font-bold text-base text-emerald-950 flex items-center gap-2">
+          <h3 className="font-serif font-bold text-base text-emerald-955 flex items-center gap-2">
             <ShieldAlert className="w-5 h-5 text-amber-500" />
             Public Registration Portal Switch
           </h3>
           <p className="text-slate-500 text-xs leading-relaxed">
-            When enabled, visitors can self-register as admins on the login screen. Turn this option off to lock logins to invite-only.
+            When enabled, visitors can self-register accounts on the login/signup screen. Turn this option off to lock log-ins to invite-only.
           </p>
         </div>
         <button 
@@ -138,6 +152,29 @@ const AdminsManager = () => {
           className="flex items-center gap-1.5 focus:outline-none"
         >
           {allowPublicReg ? (
+            <ToggleRight className="w-14 h-10 text-emerald-800 cursor-pointer" />
+          ) : (
+            <ToggleLeft className="w-14 h-10 text-slate-300 cursor-pointer" />
+          )}
+        </button>
+      </div>
+
+      {/* Toggle Student Nomination Form Control Card */}
+      <div className="bg-white p-6 rounded-2xl border border-slate-150 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition-shadow">
+        <div className="space-y-1 max-w-lg">
+          <h3 className="font-serif font-bold text-base text-emerald-955 flex items-center gap-2">
+            <ShieldAlert className="w-5 h-5 text-amber-500" />
+            Student Nomination Form Switch
+          </h3>
+          <p className="text-slate-500 text-xs leading-relaxed">
+            When enabled, the public Student Nomination Form button will be displayed on the homepage, allowing logged-in students to submit their marks and profiles.
+          </p>
+        </div>
+        <button 
+          onClick={handleToggleStudentForm}
+          className="flex items-center gap-1.5 focus:outline-none"
+        >
+          {allowStudentForm ? (
             <ToggleRight className="w-14 h-10 text-emerald-800 cursor-pointer" />
           ) : (
             <ToggleLeft className="w-14 h-10 text-slate-300 cursor-pointer" />

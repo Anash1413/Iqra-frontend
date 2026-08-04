@@ -1,4 +1,5 @@
-let base = import.meta.env.VITE_API_URL || 'https://iqra-backend-o4g7.onrender.com';
+let base = import.meta.env.VITE_API_URL || 'https://iqra-backend-o4g7.onrender.com'; 
+// let base =  'http://localhost:5000';
 if (base && !base.endsWith('/api') && !base.endsWith('/api/')) {
   base = base.replace(/\/$/, '') + '/api';
 }
@@ -177,14 +178,14 @@ export const api = {
     return data;
   },
 
-  toggleRegistration: async (allowPublicRegistration, token) => {
+  toggleRegistration: async (settingsData, token) => {
     const res = await fetch(`${BASE_URL}/admin/toggle-registration`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ allowPublicRegistration })
+      body: JSON.stringify(settingsData)
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to update settings');
@@ -196,5 +197,158 @@ export const api = {
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to get signup settings');
     return data.data;
+  },
+
+  // Certificates API bindings
+  fetchTemplates: async (token) => {
+    const res = await fetch(`${BASE_URL}/certificates/templates`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to fetch templates');
+    return data.data;
+  },
+
+  createTemplate: async (templateData, token) => {
+    const res = await fetch(`${BASE_URL}/certificates/templates`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(templateData)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to create template');
+    return data.data;
+  },
+
+  updateTemplate: async (id, templateData, token) => {
+    const res = await fetch(`${BASE_URL}/certificates/templates/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(templateData)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to update template');
+    return data.data;
+  },
+
+  deleteTemplate: async (id, token) => {
+    const res = await fetch(`${BASE_URL}/certificates/templates/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to delete template');
+    return data;
+  },
+
+  fetchNextCertificateNo: async (year, token) => {
+    const res = await fetch(`${BASE_URL}/certificates/next-number?year=${year || ''}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to fetch next certificate number');
+    return data.nextCertificateNo;
+  },
+
+  recordCertificate: async (certData, token) => {
+    const res = await fetch(`${BASE_URL}/certificates/history`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(certData)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to record certificate');
+    return data.data;
+  },
+
+  fetchCertificateHistory: async (filters, token) => {
+    const queryString = buildQueryString(filters);
+    const res = await fetch(`${BASE_URL}/certificates/history${queryString}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to fetch certificate history');
+    return data.data;
+  },
+
+  deleteCertificateHistory: async (id, token) => {
+    const res = await fetch(`${BASE_URL}/certificates/history/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to delete history log');
+    return data;
+  },
+
+  fetchCertificateStats: async (token) => {
+    const res = await fetch(`${BASE_URL}/certificates/stats`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to fetch certificate stats');
+    return data.data;
+  },
+
+  verifyCertificatePublic: async (identifier) => {
+    const res = await fetch(`${BASE_URL}/certificates/verify/${identifier}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to verify certificate');
+    return data.data;
+  },
+
+  // Student Nomination Application APIs
+  submitStudentApplication: async (formData, token) => {
+    const res = await fetch(`${BASE_URL}/students/application`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData // Form data object for handling image uploads
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to submit application');
+    return data;
+  },
+
+  fetchStudentApplicationMe: async (token) => {
+    const res = await fetch(`${BASE_URL}/students/application/me`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to fetch student application');
+    return data.data;
+  },
+
+  listStudentApplicationsAdmin: async (token) => {
+    const res = await fetch(`${BASE_URL}/students/application/admin/list`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to list applications');
+    return data.data;
+  },
+
+  reviewStudentApplicationAdmin: async (id, reviewData, token) => {
+    const res = await fetch(`${BASE_URL}/students/application/admin/review/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(reviewData)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to review application');
+    return data;
   }
 };

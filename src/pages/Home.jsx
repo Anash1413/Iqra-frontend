@@ -7,6 +7,7 @@ import { ArrowRight, Star, GraduationCap, CheckCircle } from 'lucide-react';
 const Home = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [allowStudentForm, setAllowStudentForm] = useState(false);
   const [stats, setStats] = useState([
     { value: '0', label: 'Total Awards Given' },
     { value: '0', label: 'Covered Boards' },
@@ -39,6 +40,10 @@ const Home = () => {
         const currentYear = new Date().getFullYear();
         const currentToppers = list.filter(s => s.year === currentYear);
         setStudents(currentToppers.slice(0, 3));
+
+        // Load dynamic registration options
+        const status = await api.getRegistrationStatus();
+        setAllowStudentForm(status.allowStudentForm);
       } catch (err) {
         console.error('Error loading Home Toppers:', err.message);
       } finally {
@@ -60,10 +65,20 @@ const Home = () => {
         <div className="absolute inset-0 opacity-40 pointer-events-none bg-[radial-gradient(#e2e8f0_1.5px,transparent_1.5px)] [background-size:16px_16px]"></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-8 animate-fade-in-up">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100/80 text-emerald-805 text-xs font-bold uppercase tracking-wider">
-            <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
-            Empowering Academic Growth
-          </div>
+          {allowStudentForm ? (
+            <Link
+              to="/profile"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-250/80 text-amber-805 text-xs font-extrabold uppercase tracking-wider animate-bounce hover:bg-amber-100 transition-colors shadow-xs"
+            >
+              <GraduationCap className="w-4 h-4 text-amber-600" />
+              Nominate Student for Topper Award &rarr;
+            </Link>
+          ) : (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100/80 text-emerald-805 text-xs font-bold uppercase tracking-wider">
+              <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+              Empowering Academic Growth
+            </div>
+          )}
           
           <h1 className="font-serif font-bold text-4xl sm:text-6xl tracking-tight leading-tight max-w-4xl mx-auto text-emerald-950">
             {heroTitle}

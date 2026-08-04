@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LayoutDashboard, GraduationCap, FileText, Users, LogOut, Menu, X, Globe } from 'lucide-react';
+import { LayoutDashboard, GraduationCap, FileText, Users, LogOut, Menu, X, Globe, Award, Grid, LayoutTemplate, History, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const AdminLayout = () => {
@@ -64,6 +64,20 @@ const AdminLayout = () => {
               Merit Directory
             </NavLink>
 
+            <NavLink 
+              to="/admin/nominations" 
+              className={({ isActive }) => 
+                `flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-semibold tracking-wide transition-all ${
+                  isActive 
+                    ? 'bg-emerald-950 text-white shadow-sm' 
+                    : 'text-slate-500 hover:bg-slate-100 hover:text-emerald-950'
+                }`
+              }
+            >
+              <FileText className="w-4 h-4" />
+              Nomination Forms
+            </NavLink>
+
             {isSuperAdmin && (
               <NavLink 
                 to="/admin/admins" 
@@ -79,6 +93,82 @@ const AdminLayout = () => {
                 System Logins
               </NavLink>
             )}
+
+            {/* Certificates section */}
+            <div className="pt-4 border-t border-slate-100 mt-4 px-2">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-2">Certificates Console</p>
+              
+              <NavLink 
+                to="/admin/certificates" 
+                end
+                className={({ isActive }) => 
+                  `flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
+                    isActive 
+                      ? 'bg-emerald-950 text-white shadow-sm' 
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-emerald-950'
+                  }`
+                }
+              >
+                <Award className="w-3.5 h-3.5" />
+                Console Overview
+              </NavLink>
+
+              <NavLink 
+                to="/admin/certificates/single" 
+                className={({ isActive }) => 
+                  `flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
+                    isActive 
+                      ? 'bg-emerald-950 text-white shadow-sm' 
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-emerald-950'
+                  }`
+                }
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Generate Single
+              </NavLink>
+
+              <NavLink 
+                to="/admin/certificates/bulk" 
+                className={({ isActive }) => 
+                  `flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
+                    isActive 
+                      ? 'bg-emerald-950 text-white shadow-sm' 
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-emerald-950'
+                  }`
+                }
+              >
+                <Grid className="w-3.5 h-3.5" />
+                Bulk Generate
+              </NavLink>
+
+              <NavLink 
+                to="/admin/certificates/templates" 
+                className={({ isActive }) => 
+                  `flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
+                    isActive 
+                      ? 'bg-emerald-950 text-white shadow-sm' 
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-emerald-950'
+                  }`
+                }
+              >
+                <LayoutTemplate className="w-3.5 h-3.5" />
+                Visual Template Editor
+              </NavLink>
+
+              <NavLink 
+                to="/admin/certificates/history" 
+                className={({ isActive }) => 
+                  `flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
+                    isActive 
+                      ? 'bg-emerald-950 text-white shadow-sm' 
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-emerald-950'
+                  }`
+                }
+              >
+                <History className="w-3.5 h-3.5" />
+                Generation History
+              </NavLink>
+            </div>
           </nav>
         </div>
 
@@ -185,6 +275,19 @@ const AdminLayout = () => {
                   Merit Directory
                 </NavLink>
 
+                <NavLink 
+                  to="/admin/nominations" 
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) => 
+                    `flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                      isActive ? 'bg-emerald-950 text-white shadow' : 'text-slate-500 hover:bg-slate-100 hover:text-emerald-950'
+                    }`
+                  }
+                >
+                  <FileText className="w-4 h-4" />
+                  Nomination Forms
+                </NavLink>
+
                 {isSuperAdmin && (
                   <NavLink 
                     to="/admin/admins" 
@@ -199,6 +302,77 @@ const AdminLayout = () => {
                     System Logins
                   </NavLink>
                 )}
+
+                {/* Certificates section (Mobile) */}
+                <div className="pt-4 border-t border-slate-100 mt-4">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-4 mb-2">Certificates Console</p>
+                  
+                  <NavLink 
+                    to="/admin/certificates" 
+                    end
+                    onClick={() => setMobileOpen(false)}
+                    className={({ isActive }) => 
+                      `flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                        isActive ? 'bg-emerald-950 text-white shadow' : 'text-slate-500 hover:bg-slate-100 hover:text-emerald-950'
+                      }`
+                    }
+                  >
+                    <Award className="w-3.5 h-3.5" />
+                    Console Overview
+                  </NavLink>
+
+                  <NavLink 
+                    to="/admin/certificates/single" 
+                    onClick={() => setMobileOpen(false)}
+                    className={({ isActive }) => 
+                      `flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                        isActive ? 'bg-emerald-950 text-white shadow' : 'text-slate-500 hover:bg-slate-100 hover:text-emerald-950'
+                      }`
+                    }
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Generate Single
+                  </NavLink>
+
+                  <NavLink 
+                    to="/admin/certificates/bulk" 
+                    onClick={() => setMobileOpen(false)}
+                    className={({ isActive }) => 
+                      `flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                        isActive ? 'bg-emerald-950 text-white shadow' : 'text-slate-500 hover:bg-slate-100 hover:text-emerald-950'
+                      }`
+                    }
+                  >
+                    <Grid className="w-3.5 h-3.5" />
+                    Bulk Generate
+                  </NavLink>
+
+                  <NavLink 
+                    to="/admin/certificates/templates" 
+                    onClick={() => setMobileOpen(false)}
+                    className={({ isActive }) => 
+                      `flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                        isActive ? 'bg-emerald-950 text-white shadow' : 'text-slate-500 hover:bg-slate-100 hover:text-emerald-950'
+                      }`
+                    }
+                  >
+                    <LayoutTemplate className="w-3.5 h-3.5" />
+                    Visual Template Editor
+                  </NavLink>
+
+                  <NavLink 
+                    to="/admin/certificates/history" 
+                    onClick={() => setMobileOpen(false)}
+                    className={({ isActive }) => 
+                      `flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                        isActive ? 'bg-emerald-950 text-white shadow' : 'text-slate-500 hover:bg-slate-100 hover:text-emerald-950'
+                      }`
+                    }
+                  >
+                    <History className="w-3.5 h-3.5" />
+                    Generation History
+                  </NavLink>
+                </div>
               </nav>
             </div>
 
