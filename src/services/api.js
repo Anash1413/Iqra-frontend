@@ -1,5 +1,5 @@
 let base = import.meta.env.VITE_API_URL || 'https://iqra-backend-o4g7.onrender.com'; 
-// let base =  'http://localhost:5000';
+// let base =  'http://localhost:5000'; only for localhost
 if (base && !base.endsWith('/api') && !base.endsWith('/api/')) {
   base = base.replace(/\/$/, '') + '/api';
 }
