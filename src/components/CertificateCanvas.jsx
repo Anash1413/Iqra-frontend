@@ -1,8 +1,12 @@
 import React, { useRef, useEffect, useState } from 'react';
 import QRCode from 'qrcode';
-import { jsPDF } from 'jspdf';
 import { saveAs } from 'file-saver';
 import { Download, FileDown, Printer, AlertTriangle } from 'lucide-react';
+import { 
+  getScaleFactor, 
+  drawCertificateOnCanvas, 
+  generateHighResPDF 
+} from '../utils/certificateHelper';
 
 const CertificateCanvas = ({ template, data, showControls = true }) => {
   const canvasRef = useRef(null);
@@ -10,20 +14,24 @@ const CertificateCanvas = ({ template, data, showControls = true }) => {
   const [error, setError] = useState(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
 
-  // Sizing configurations
+  // Dimensions
   const width = template?.width || 842;
   const height = template?.height || 595;
-  const coordinates = template?.textCoordinates || {};
   const qrSettings = template?.qrSettings || { enabled: true, x: 720, y: 470, size: 80, margin: 2 };
 
-  // Generate QR Code data URL
+  // Calculate resolution scale factor (4x base)
+  const scale = getScaleFactor();
+
+  // Generate high-resolution QR code
   useEffect(() => {
     if (qrSettings.enabled && data?.certificateNo) {
       const identifier = data.verificationToken || data.certificateNo || 'preview';
       const verifyUrl = `${window.location.origin}/verify/${encodeURIComponent(identifier)}`;
+      
+      // Generate QR Code with a scaled width to prevent low-res blurring
       QRCode.toDataURL(verifyUrl, {
         margin: qrSettings.margin || 2,
-        width: qrSettings.size || 80,
+        width: (qrSettings.size || 80) * scale,
         color: {
           dark: '#000000',
           light: '#ffffff'
@@ -33,98 +41,57 @@ const CertificateCanvas = ({ template, data, showControls = true }) => {
         setQrCodeDataUrl(url);
       })
       .catch(err => {
-        console.error('Failed to generate QR data URL:', err);
+        console.error('Failed to generate high-resolution QR code data URL:', err);
       });
     } else {
       setQrCodeDataUrl('');
     }
-  }, [data?.certificateNo, qrSettings.enabled, qrSettings.size, qrSettings.margin]);
+  }, [data?.certificateNo, qrSettings.enabled, qrSettings.size, qrSettings.margin, scale]);
 
-  // Main Canvas Render loop
+  // Main Canvas Render Loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !template?.backgroundImage) return;
 
-    const ctx = canvas.getContext('2d');
-    const bgImage = new Image();
-    bgImage.crossOrigin = 'anonymous'; // Allow loading images from external domains like Cloudinary
+    let isMounted = true;
     setLoading(true);
     setError(null);
 
-    bgImage.onload = () => {
-      // Clear previous canvas drawings
-      ctx.clearRect(0, 0, width, height);
-
-      // Draw template background
-      ctx.drawImage(bgImage, 0, 0, width, height);
-
-      // Draw Dynamic Placeholder text fields
-      Object.keys(coordinates).forEach(fieldName => {
-        const config = coordinates[fieldName];
-        if (!config) return;
-
-        // Resolve placeholder value
-        let val = data[fieldName] || '';
+    const performRender = async () => {
+      try {
+        await drawCertificateOnCanvas({
+          canvas,
+          template,
+          data,
+          qrCodeDataUrl,
+          scale
+        });
         
-        // Custom formatting for dates
-        if (fieldName === 'issueDate' && val) {
-          try {
-            val = new Date(val).toLocaleDateString('en-US', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric'
-            });
-          } catch (e) {
-            // Keep original string if parse fails
-          }
+        if (isMounted) {
+          setLoading(false);
         }
-
-        // Apply styles
-        ctx.save();
-        ctx.translate(config.x, config.y);
-        ctx.rotate((config.rotation || 0) * Math.PI / 180);
-
-        const weight = config.fontWeight || 'normal';
-        const style = config.italic ? 'italic' : 'normal';
-        const family = config.fontFamily || 'serif';
-        const size = config.fontSize || 24;
-
-        ctx.font = `${style} ${weight} ${size}px ${family}`;
-        ctx.fillStyle = config.color || '#000000';
-        ctx.textAlign = config.align || 'center';
-        ctx.textBaseline = 'middle';
-
-        // Draw text
-        ctx.fillText(val, 0, 0);
-        ctx.restore();
-      });
-
-      // Draw QR Code if enabled and loaded
-      if (qrSettings.enabled && qrCodeDataUrl) {
-        const qrImage = new Image();
-        qrImage.onload = () => {
-          ctx.drawImage(qrImage, qrSettings.x, qrSettings.y, qrSettings.size, qrSettings.size);
+      } catch (err) {
+        console.error('Error drawing high-resolution certificate:', err);
+        if (isMounted) {
+          setError(err.message || 'Failed to render high-resolution certificate canvas.');
           setLoading(false);
-        };
-        qrImage.onerror = () => {
-          console.error('Failed to load QR image on canvas');
-          setLoading(false);
-        };
-        qrImage.src = qrCodeDataUrl;
-      } else {
-        setLoading(false);
+        }
       }
     };
 
-    bgImage.onerror = () => {
-      setError('Could not load certificate background image. Please verify URL.');
-      setLoading(false);
+    performRender();
+
+    // Cleanup: release canvas memory
+    return () => {
+      isMounted = false;
+      if (canvas) {
+        canvas.width = 0;
+        canvas.height = 0;
+      }
     };
+  }, [template, data, qrCodeDataUrl, scale]);
 
-    bgImage.src = template.backgroundImage;
-  }, [template, data, qrCodeDataUrl, width, height, coordinates, qrSettings]);
-
-  // Trigger file download helper: PNG
+  // Download high-resolution PNG
   const downloadPNG = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -134,38 +101,44 @@ const CertificateCanvas = ({ template, data, showControls = true }) => {
     }, 'image/png');
   };
 
-  // Trigger file download helper: PDF
+  // Download high-resolution print-ready A4 PDF
   const downloadPDF = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Convert pixel dimensions to mm (A4 aspect is 297mm x 210mm)
-    const orientation = width >= height ? 'landscape' : 'portrait';
-    const pdf = new jsPDF({
-      orientation: orientation,
-      unit: 'px',
-      format: [width, height]
-    });
-
-    const imgData = canvas.toDataURL('image/png');
-    pdf.addImage(imgData, 'PNG', 0, 0, width, height);
-    
-    const fileName = `${data.studentName.replace(/\s+/g, '_')}_Certificate.pdf`;
-    pdf.save(fileName);
+    try {
+      const pdf = generateHighResPDF({
+        canvas,
+        width,
+        height,
+        studentName: data.studentName
+      });
+      const fileName = `${data.studentName.replace(/\s+/g, '_')}_Certificate.pdf`;
+      pdf.save(fileName);
+    } catch (err) {
+      console.error('Failed to generate high-resolution PDF:', err);
+      setError('Could not export PDF. Please check certificate background and details.');
+    }
   };
 
-  // Trigger print document
+  // Handle printing high-res certificate
   const handlePrint = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    
     const imgUrl = canvas.toDataURL('image/png');
     const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      setError('Popup blocker prevented opening print window. Please allow popups.');
+      return;
+    }
+    
     printWindow.document.write(`
       <html>
         <head>
           <title>Print Certificate - ${data.studentName}</title>
           <style>
-            body { margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+            body { margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; background: #fff; }
             img { max-width: 100%; max-height: 100%; object-fit: contain; }
             @media print {
               body { margin: 0; }
@@ -183,12 +156,12 @@ const CertificateCanvas = ({ template, data, showControls = true }) => {
 
   return (
     <div className="flex flex-col items-center gap-4 w-full">
-      {/* Canvas container */}
+      {/* Canvas Container */}
       <div className="relative border border-slate-200/80 rounded-2xl overflow-hidden bg-slate-100/50 shadow-inner flex items-center justify-center max-w-full">
         {loading && (
           <div className="absolute inset-0 bg-white/70 backdrop-blur-xs flex flex-col items-center justify-center gap-3 z-10">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-950 border-t-amber-600"></div>
-            <p className="text-slate-500 text-xs font-semibold">Generating layout canvas...</p>
+            <p className="text-slate-500 text-xs font-semibold">Generating high-resolution canvas...</p>
           </div>
         )}
         
@@ -201,8 +174,6 @@ const CertificateCanvas = ({ template, data, showControls = true }) => {
 
         <canvas 
           ref={canvasRef} 
-          width={width} 
-          height={height}
           style={{ width: '100%', height: 'auto', maxWidth: `${width}px` }}
           className="bg-white block"
         />

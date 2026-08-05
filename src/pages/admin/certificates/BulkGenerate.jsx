@@ -4,12 +4,17 @@ import { useAuth } from '../../../context/AuthContext';
 import BulkTable from '../../../components/BulkTable';
 import ExcelJS from 'exceljs';
 import QRCode from 'qrcode';
-import { jsPDF } from 'jspdf';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { ChevronLeft, Grid, FileSpreadsheet, Download, RefreshCw, Layers, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { 
+  getScaleFactor, 
+  preloadCertificateFonts, 
+  drawCertificateOnCanvas, 
+  generateHighResPDF 
+} from '../../../utils/certificateHelper';
 
 const BulkGenerate = () => {
   const { token } = { ...useAuth() };
@@ -182,15 +187,11 @@ const BulkGenerate = () => {
       const width = selectedTemplate.width || 842;
       const height = selectedTemplate.height || 595;
 
-      // Load background template image as dynamic HTML Image instance
-      setProgressText('Fetching certificate background image...');
-      const bgImage = await new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error('Failed to load template background image.'));
-        img.src = selectedTemplate.backgroundImage;
-      });
+      // Preload all custom fonts once before bulk generation loop begins to prevent anti-aliasing fallback text capture
+      setProgressText('Preloading custom fonts...');
+      await preloadCertificateFonts(selectedTemplate.textCoordinates);
+
+      const scale = getScaleFactor();
 
       // Loop over and compile each credential
       for (let idx = 0; idx < createdCertificates.length; idx++) {
@@ -201,83 +202,47 @@ const BulkGenerate = () => {
 
         // Initialize virtual canvas
         const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
 
-        // Draw template background
-        ctx.drawImage(bgImage, 0, 0, width, height);
-
-        // Draw overlay text placements
-        Object.keys(selectedTemplate.textCoordinates || {}).forEach(fieldName => {
-          const config = selectedTemplate.textCoordinates[fieldName];
-          if (!config) return;
-
-          let val = student[fieldName] || '';
-          
-          // Fallback static values
-          if (fieldName === 'awardName') val = 'Academic Excellence Topper Award';
-          if (fieldName === 'awardYear') val = String(new Date().getFullYear());
-          if (fieldName === 'issueDate') {
-            val = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
-          }
-
-          ctx.save();
-          ctx.translate(config.x, config.y);
-          ctx.rotate((config.rotation || 0) * Math.PI / 180);
-
-          const weight = config.fontWeight || 'normal';
-          const style = config.italic ? 'italic' : 'normal';
-          const family = config.fontFamily || 'serif';
-          const size = config.fontSize || 22;
-
-          ctx.font = `${style} ${weight} ${size}px ${family}`;
-          ctx.fillStyle = config.color || '#000000';
-          ctx.textAlign = config.align || 'center';
-          ctx.textBaseline = 'middle';
-
-          ctx.fillText(val, 0, 0);
-          ctx.restore();
-        });
-
-        // Draw QR Code if enabled
+        // Draw QR Code if enabled (at high scaled resolution)
+        let qrCodeDataUrl = '';
         if (selectedTemplate.qrSettings?.enabled) {
           const verifyUrl = `${window.location.origin}/verify/${encodeURIComponent(student.verificationToken || student.certificateNo)}`;
-          const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
+          qrCodeDataUrl = await QRCode.toDataURL(verifyUrl, {
             margin: selectedTemplate.qrSettings.margin || 2,
-            width: selectedTemplate.qrSettings.size || 80
+            width: (selectedTemplate.qrSettings.size || 80) * scale
           });
-
-          const qrImage = await new Promise((resQr, rejQr) => {
-            const img = new Image();
-            img.onload = () => resQr(img);
-            img.onerror = () => rejQr(new Error('Failed to load QR code.'));
-            img.src = qrDataUrl;
-          });
-
-          ctx.drawImage(
-            qrImage, 
-            selectedTemplate.qrSettings.x, 
-            selectedTemplate.qrSettings.y, 
-            selectedTemplate.qrSettings.size, 
-            selectedTemplate.qrSettings.size
-          );
         }
 
-        // Convert canvas layout to PDF document
-        const pdf = new jsPDF({
-          orientation: width >= height ? 'landscape' : 'portrait',
-          unit: 'px',
-          format: [width, height]
+        // Draw overlay and background on the canvas using our high-res utility
+        await drawCertificateOnCanvas({
+          canvas,
+          template: selectedTemplate,
+          data: {
+            ...student,
+            awardName: 'Academic Excellence Topper Award',
+            awardYear: String(new Date().getFullYear()),
+            issueDate: new Date()
+          },
+          qrCodeDataUrl,
+          scale
         });
 
-        const imgData = canvas.toDataURL('image/png');
-        pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+        // Convert canvas layout to high-res, print-ready PDF document
+        const pdf = generateHighResPDF({
+          canvas,
+          width,
+          height,
+          studentName: student.studentName
+        });
         const pdfBlob = pdf.output('blob');
 
         // Add file to ZIP
         const safeName = student.studentName.replace(/\s+/g, '_');
         zip.file(`${safeName}_Certificate.pdf`, pdfBlob);
+
+        // Memory cleanup: release canvas resources immediately to prevent memory leaks in large batches
+        canvas.width = 0;
+        canvas.height = 0;
       }
 
       // Finalize ZIP archive package creation
