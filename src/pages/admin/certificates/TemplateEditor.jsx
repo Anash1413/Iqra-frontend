@@ -380,7 +380,7 @@ const TemplateEditor = () => {
               {/* Absolute Overlays for Placeholder Text Fields */}
               {PLACEHOLDERS.map(p => {
                 const config = textCoordinates[p.key];
-                if (!config) return null;
+                if (!config || config.enabled === false) return null;
 
                 const isSelected = selectedField === p.key;
 
@@ -473,7 +473,9 @@ const TemplateEditor = () => {
               className="w-full py-2 px-3 border border-slate-200 bg-slate-50 rounded-xl font-bold text-slate-700"
             >
               {PLACEHOLDERS.map(p => (
-                <option key={p.key} value={p.key}>{p.label}</option>
+                <option key={p.key} value={p.key}>
+                  {p.label}{textCoordinates[p.key]?.enabled === false ? ' (Disabled)' : ''}
+                </option>
               ))}
               <option value="qrCode">[QR Code Box]</option>
             </select>
@@ -538,6 +540,20 @@ const TemplateEditor = () => {
             /* Font Overlay coordinates and style sliders */
             <div className="space-y-4 text-xs font-semibold text-slate-500">
               
+              {/* Enable/Disable Field Checkbox Toggle */}
+              <div className="flex items-center justify-between p-3 bg-emerald-50/50 border border-emerald-100/60 rounded-2xl mb-2">
+                <div>
+                  <h4 className="font-serif font-bold text-xs text-emerald-955">Enable on Certificate</h4>
+                  <p className="text-[9px] text-slate-400 font-semibold mt-0.5">Toggle display visibility & form entry</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={currentFieldConfig.enabled !== false}
+                  onChange={(e) => handleFieldStyleChange('enabled', e.target.checked)}
+                  className="h-4.5 w-4.5 rounded-sm border-slate-350 text-emerald-955 focus:ring-emerald-900 cursor-pointer"
+                />
+              </div>
+
               {/* Font Family selection */}
               <div>
                 <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Font Family</label>

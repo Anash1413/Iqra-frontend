@@ -117,7 +117,7 @@ export const drawCertificateOnCanvas = async ({ canvas, template, data, qrCodeDa
   const coordinates = template.textCoordinates || {};
   Object.keys(coordinates).forEach((fieldName) => {
     const config = coordinates[fieldName];
-    if (!config) return;
+    if (!config || config.enabled === false) return;
 
     let val = data[fieldName] || '';
 

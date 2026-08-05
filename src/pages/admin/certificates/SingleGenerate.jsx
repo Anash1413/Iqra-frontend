@@ -12,6 +12,14 @@ const SingleGenerate = () => {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Helper to determine if a placeholder field is enabled in the selected design template
+  const isFieldEnabled = (fieldName) => {
+    if (!selectedTemplate) return true;
+    const config = selectedTemplate.textCoordinates?.[fieldName] || selectedTemplate.textCoordinates?.get?.(fieldName);
+    if (!config) return false;
+    return config.enabled !== false;
+  };
+
   // Form Fields State
   const [formData, setFormData] = useState({
     studentName: '',
@@ -179,120 +187,144 @@ const SingleGenerate = () => {
               </div>
 
               {/* Student Name */}
-              <div>
-                <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Student Name</label>
-                <input
-                  type="text"
-                  name="studentName"
-                  value={formData.studentName}
-                  onChange={handleInputChange}
-                  placeholder="e.g. Ahmad Anash"
-                  required
-                  className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all"
-                />
-              </div>
+              {isFieldEnabled('studentName') && (
+                <div>
+                  <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Student Name</label>
+                  <input
+                    type="text"
+                    name="studentName"
+                    value={formData.studentName}
+                    onChange={handleInputChange}
+                    placeholder="e.g. Ahmad Anash"
+                    required
+                    className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all"
+                  />
+                </div>
+              )}
 
               {/* Father Name */}
-              <div>
-                <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Father's Name</label>
-                <input
-                  type="text"
-                  name="fatherName"
-                  value={formData.fatherName}
-                  onChange={handleInputChange}
-                  placeholder="e.g. Rashid Ahmad"
-                  className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all"
-                />
-              </div>
+              {isFieldEnabled('fatherName') && (
+                <div>
+                  <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Father's Name</label>
+                  <input
+                    type="text"
+                    name="fatherName"
+                    value={formData.fatherName}
+                    onChange={handleInputChange}
+                    placeholder="e.g. Rashid Ahmad"
+                    className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all"
+                  />
+                </div>
+              )}
 
               {/* Grid: Class & Board */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Class</label>
-                  <input
-                    type="text"
-                    name="class"
-                    value={formData.class}
-                    onChange={handleInputChange}
-                    placeholder="e.g. 10 or 12"
-                    className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all"
-                  />
+              {(isFieldEnabled('class') || isFieldEnabled('board')) && (
+                <div className="grid grid-cols-2 gap-4">
+                  {isFieldEnabled('class') ? (
+                    <div>
+                      <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Class</label>
+                      <input
+                        type="text"
+                        name="class"
+                        value={formData.class}
+                        onChange={handleInputChange}
+                        placeholder="e.g. 10 or 12"
+                        className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all"
+                      />
+                    </div>
+                  ) : <div />}
+                  {isFieldEnabled('board') ? (
+                    <div>
+                      <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Board</label>
+                      <input
+                        type="text"
+                        name="board"
+                        value={formData.board}
+                        onChange={handleInputChange}
+                        placeholder="e.g. CBSE or MP Board"
+                        className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all"
+                      />
+                    </div>
+                  ) : <div />}
                 </div>
-                <div>
-                  <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Board</label>
-                  <input
-                    type="text"
-                    name="board"
-                    value={formData.board}
-                    onChange={handleInputChange}
-                    placeholder="e.g. CBSE or MP Board"
-                    className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all"
-                  />
-                </div>
-              </div>
+              )}
 
               {/* Grid: Score & Award Year */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Percentage Score</label>
-                  <input
-                    type="text"
-                    name="percentage"
-                    value={formData.percentage}
-                    onChange={handleInputChange}
-                    placeholder="e.g. 94.5%"
-                    className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all"
-                  />
+              {(isFieldEnabled('percentage') || isFieldEnabled('awardYear')) && (
+                <div className="grid grid-cols-2 gap-4">
+                  {isFieldEnabled('percentage') ? (
+                    <div>
+                      <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Percentage Score</label>
+                      <input
+                        type="text"
+                        name="percentage"
+                        value={formData.percentage}
+                        onChange={handleInputChange}
+                        placeholder="e.g. 94.5%"
+                        className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all"
+                      />
+                    </div>
+                  ) : <div />}
+                  {isFieldEnabled('awardYear') ? (
+                    <div>
+                      <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Award Year</label>
+                      <input
+                        type="number"
+                        name="awardYear"
+                        value={formData.awardYear}
+                        onChange={handleYearChange}
+                        className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all"
+                      />
+                    </div>
+                  ) : <div />}
                 </div>
-                <div>
-                  <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Award Year</label>
-                  <input
-                    type="number"
-                    name="awardYear"
-                    value={formData.awardYear}
-                    onChange={handleYearChange}
-                    className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all"
-                  />
-                </div>
-              </div>
+              )}
 
               {/* Award Name */}
-              <div>
-                <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Award Name</label>
-                <input
-                  type="text"
-                  name="awardName"
-                  value={formData.awardName}
-                  onChange={handleInputChange}
-                  placeholder="e.g. Academic Excellence Award"
-                  className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all"
-                />
-              </div>
-
-              {/* Grid: Certificate number & Issue Date */}
-              <div className="grid grid-cols-2 gap-4">
+              {isFieldEnabled('awardName') && (
                 <div>
-                  <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Certificate Number</label>
+                  <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Award Name</label>
                   <input
                     type="text"
-                    name="certificateNo"
-                    value={formData.certificateNo}
+                    name="awardName"
+                    value={formData.awardName}
                     onChange={handleInputChange}
-                    required
-                    className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all font-mono font-bold text-red-600"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Issue Date</label>
-                  <input
-                    type="date"
-                    name="issueDate"
-                    value={formData.issueDate}
-                    onChange={handleInputChange}
+                    placeholder="e.g. Academic Excellence Award"
                     className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all"
                   />
                 </div>
-              </div>
+              )}
+
+              {/* Grid: Certificate number & Issue Date */}
+              {(isFieldEnabled('certificateNo') || isFieldEnabled('issueDate')) && (
+                <div className="grid grid-cols-2 gap-4">
+                  {isFieldEnabled('certificateNo') ? (
+                    <div>
+                      <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Certificate Number</label>
+                      <input
+                        type="text"
+                        name="certificateNo"
+                        value={formData.certificateNo}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all font-mono font-bold text-red-600"
+                      />
+                    </div>
+                  ) : <div />}
+                  {isFieldEnabled('issueDate') ? (
+                    <div>
+                      <label className="block text-[10px] text-slate-400 uppercase font-extrabold tracking-wider mb-1.5">Issue Date</label>
+                      <input
+                        type="date"
+                        name="issueDate"
+                        value={formData.issueDate}
+                        onChange={handleInputChange}
+                        className="w-full py-2.5 px-3 border border-slate-200 focus:border-emerald-700/60 outline-hidden bg-slate-50/50 focus:bg-white rounded-xl transition-all"
+                      />
+                    </div>
+                  ) : <div />}
+                </div>
+              )}
 
             </div>
 
