@@ -15,7 +15,7 @@ const PLACEHOLDERS = [
   { key: 'certificateNo', label: 'Certificate No', defaultVal: 'IQRA/2026/001' },
   { key: 'awardName', label: 'Award Name', defaultVal: '' },
   { key: 'awardYear', label: 'Award Year', defaultVal: '' },
-  { key: 'issueDate', label: 'Issue Date', defaultVal: '' }
+  { key: 'issueDate', label: 'Issue Date', defaultVal: '05/01/2026' }
 ];
 
 const FONTS = ['serif', 'sans-serif', 'monospace', 'cursive', 'Georgia', 'Arial', 'Times New Roman', 'Cinzel', 'Great Vibes', 'Alex Brush', 'Pinyon Script', 'Fineday'];
