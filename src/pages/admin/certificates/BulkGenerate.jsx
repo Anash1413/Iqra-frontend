@@ -220,7 +220,7 @@ const BulkGenerate = () => {
           data: {
             ...student,
             awardName: '',
-            awardYear: String(new Date().getFullYear()),
+            awardYear: '',
             issueDate: new Date()
           },
           qrCodeDataUrl,
