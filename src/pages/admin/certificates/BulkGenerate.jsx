@@ -219,8 +219,8 @@ const BulkGenerate = () => {
           template: selectedTemplate,
           data: {
             ...student,
-            awardName: '',
-            awardYear: '',
+            awardName: 'Academic Excellence Topper Award',
+            awardYear: String(new Date().getFullYear()),
             issueDate: new Date()
           },
           qrCodeDataUrl,
