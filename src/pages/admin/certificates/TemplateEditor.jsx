@@ -13,8 +13,8 @@ const PLACEHOLDERS = [
   { key: 'board', label: 'Board Name', defaultVal: 'MPBSE' },
   { key: 'percentage', label: 'Percentage Score', defaultVal: '94.5' },
   { key: 'certificateNo', label: 'Certificate No', defaultVal: 'IQRA/2026/001' },
-  { key: 'awardName', label: 'Award Name', defaultVal: '' },
-  { key: 'awardYear', label: 'Award Year', defaultVal: '' },
+  { key: 'awardName', label: 'Award Name', defaultVal: 'Academic Excellence Topper Award' },
+  { key: 'awardYear', label: 'Award Year', defaultVal: '2026' },
   { key: 'issueDate', label: 'Issue Date', defaultVal: '05/01/2026' }
 ];
 
