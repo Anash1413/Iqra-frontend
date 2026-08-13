@@ -27,9 +27,9 @@ const BulkGenerate = () => {
 
   // Spreadsheet state
   const [rows, setRows] = useState([
-    { studentName: '', fatherName: '', class: '', board: 'CBSE', percentage: '', certificateNo: '' },
-    { studentName: '', fatherName: '', class: '', board: 'CBSE', percentage: '', certificateNo: '' },
-    { studentName: '', fatherName: '', class: '', board: 'CBSE', percentage: '', certificateNo: '' }
+    { studentName: '', fatherName: '', class: '', board: 'MPBSE', percentage: '', certificateNo: '' },
+    { studentName: '', fatherName: '', class: '', board: 'MPBSE', percentage: '', certificateNo: '' },
+    { studentName: '', fatherName: '', class: '', board: 'MPBSE', percentage: '', certificateNo: '' }
   ]);
 
   // Bulk process execution status
@@ -125,7 +125,7 @@ const BulkGenerate = () => {
     // Add dummy row values
     worksheet.addRow({
       studentName: 'Ahmad Anash',
-      fatherName: 'Rashid Ahmad',
+      fatherName: ' Ahmad',
       percentage: '94.5%',
       class: '12',
       certificateNo: 'IQRA/2026/001',
@@ -219,7 +219,7 @@ const BulkGenerate = () => {
           template: selectedTemplate,
           data: {
             ...student,
-            awardName: 'Academic Excellence Topper Award',
+            awardName: '',
             awardYear: String(new Date().getFullYear()),
             issueDate: new Date()
           },
